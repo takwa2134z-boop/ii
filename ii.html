@@ -3,220 +3,180 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>نور الإيمان</title>
+<title>نور الإيمان - القرآن الكريم</title>
 
 <style>
 body{
 margin:0;
 font-family:system-ui;
-background:#0B1D39;
-color:white;
+background:#F5F0E6;
+color:#1f3d2b;
 }
 
 header{
+background:#2f5d3a;
+color:white;
 padding:15px;
 text-align:center;
-background:rgba(255,255,255,0.05);
-backdrop-filter: blur(10px);
+font-weight:bold;
 position:sticky;
 top:0;
-font-weight:bold;
-}
-
-.hero{
-text-align:center;
-padding:20px;
-}
-
-.hero h1{
-color:#D4AF37;
-animation:float 3s infinite;
-}
-
-@keyframes float{
-0%,100%{transform:translateY(0);}
-50%{transform:translateY(-10px);}
 }
 
 .container{
 display:grid;
-grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-gap:15px;
-padding:15px;
+grid-template-columns:300px 1fr;
+height:100vh;
 }
 
-.card{
-background:#102a4a;
-padding:15px;
-border-radius:15px;
-transition:0.3s;
+.sidebar{
+background:#fff;
+overflow:auto;
+border-left:2px solid #eee;
 }
 
-.card:hover{transform:scale(1.03);}
+.surah{
+padding:10px;
+border-bottom:1px solid #eee;
+cursor:pointer;
+}
 
-h3{color:#D4AF37;}
+.surah:hover{
+background:#eaf3ea;
+}
 
-.task{
-display:flex;
-justify-content:space-between;
-padding:8px;
-margin:5px 0;
-background:rgba(255,255,255,0.05);
+.content{
+padding:20px;
+overflow:auto;
+}
+
+.ayah{
+background:white;
+padding:10px;
+margin-bottom:10px;
 border-radius:10px;
+box-shadow:0 2px 8px rgba(0,0,0,0.05);
+}
+
+h2{
+color:#2f5d3a;
 }
 
 button{
-padding:8px;
-background:#D4AF37;
+padding:8px 12px;
+background:#2f5d3a;
+color:white;
 border:none;
-border-radius:10px;
-font-weight:bold;
+border-radius:8px;
 cursor:pointer;
-margin-top:8px;
+margin:5px 0;
 }
-
-.bar{
-height:10px;
-background:#1f3a5a;
-border-radius:10px;
-overflow:hidden;
-}
-
-#bar{
-height:100%;
-width:0%;
-background:linear-gradient(90deg,#D4AF37,#fff2a6);
-transition:0.5s;
-}
-
-small{opacity:0.7;}
 </style>
 </head>
 
 <body>
 
-<header>🌙 نور الإيمان</header>
-
-<div class="hero">
-<h1>ابدأ يومك بالإيمان</h1>
-<p id="verse"></p>
-</div>
+<header>📖 القرآن الكريم + التفسير + الصوت</header>
 
 <div class="container">
 
-<div class="card">
-<h3>🕌 الصلاة القادمة</h3>
-<p id="prayer">تحميل...</p>
-</div>
+<!-- السور -->
+<div class="sidebar" id="surahList"></div>
 
-<div class="card">
-<h3>📖 آية / قرآن</h3>
-<p id="quran"></p>
-</div>
+<!-- المحتوى -->
+<div class="content">
+<h2 id="title">اختر سورة</h2>
 
-<div class="card">
-<h3>🤲 الذكر</h3>
-<p id="dhikr"></p>
-<button onclick="newDhikr()">ذكر جديد</button>
-</div>
+<button onclick="playAudio()">🔊 تشغيل التلاوة</button>
 
-<div class="card">
-<h3>📅 مهام اليوم</h3>
+<div id="ayahs"></div>
 
-<div class="task"><span>الفجر</span><input type="checkbox" onchange="update()"></div>
-<div class="task"><span>أذكار</span><input type="checkbox" onchange="update()"></div>
-<div class="task"><span>قرآن</span><input type="checkbox" onchange="update()"></div>
-<div class="task"><span>صدقة</span><input type="checkbox" onchange="update()"></div>
-
-<div class="bar"><div id="bar"></div></div>
-<p id="percent">0%</p>
-<p id="level">المستوى: مبتدئ 🌱</p>
-
-<button onclick="reset()">إعادة تعيين</button>
-</div>
-
-<div class="card">
-<h3>🧭 القبلة</h3>
-<p id="qibla">اتجاه القبلة سيُطور لاحقاً</p>
 </div>
 
 </div>
 
 <script>
-// 🌙 آيات
-const verses = [
-"فإن مع العسر يسرا",
-"ولا تيأسوا من روح الله",
-"إن الله مع الصابرين",
-"واذكر ربك إذا نسيت"
+
+// 📖 كل السور
+const surahs = [
+"الفاتحة","البقرة","آل عمران","النساء","المائدة","الأنعام","الأعراف","الأنفال","التوبة","يونس",
+"هود","يوسف","الرعد","إبراهيم","الحجر","النحل","الإسراء","الكهف","مريم","طه",
+"الأنبياء","الحج","المؤمنون","النور","الفرقان","الشعراء","النمل","القصص","العنكبوت","الروم",
+"لقمان","السجدة","الأحزاب","سبأ","فاطر","يس","الصافات","ص","الزمر","غافر",
+"فصلت","الشورى","الزخرف","الدخان","الجاثية","الأحقاف","محمد","الفتح","الحجرات","ق",
+"الذاريات","الطور","النجم","القمر","الرحمن","الواقعة","الحديد","المجادلة","الحشر","الممتحنة",
+"الصف","الجمعة","المنافقون","التغابن","الطلاق","التحريم","الملك","القلم","الحاقة","المعارج",
+"نوح","الجن","المزمل","المدثر","القيامة","الإنسان","المرسلات","النبأ","النازعات","عبس",
+"التكوير","الإنفطار","المطففين","الإنشقاق","البروج","الطارق","الأعلى","الغاشية","الفجر","البلد",
+"الشمس","الليل","الضحى","الشرح","التين","العلق","القدر","البينة","الزلزلة","العاديات",
+"القارعة","التكاثر","العصر","الهمزة","الفيل","قريش","الماعون","الكوثر","الكافرون","النصر","المسد","الإخلاص","الفلق","الناس"
 ];
 
-document.getElementById("verse").innerText =
-verses[Math.floor(Math.random()*verses.length)];
+const list = document.getElementById("surahList");
 
-// 🤲 أذكار
-const dhikr = ["سبحان الله","الحمد لله","لا إله إلا الله","الله أكبر"];
-document.getElementById("dhikr").innerText =
-dhikr[0];
+let currentAudioUrl = "";
 
-function newDhikr(){
-document.getElementById("dhikr").innerText =
-dhikr[Math.floor(Math.random()*dhikr.length)];
-}
-
-// 🕌 مواقيت الصلاة (طرابلس)
-fetch("https://api.aladhan.com/v1/timingsByCity?city=Tripoli&country=Libya&method=2")
-.then(r=>r.json())
-.then(d=>{
-document.getElementById("prayer").innerText =
-"الفجر: " + d.data.timings.Fajr;
+// عرض السور
+surahs.forEach((name,i)=>{
+let div=document.createElement("div");
+div.className="surah";
+div.innerText=(i+1)+" - "+name;
+div.onclick=()=>loadSurah(i+1,name);
+list.appendChild(div);
 });
 
-// 📖 قرآن عشوائي
-fetch("https://api.alquran.cloud/v1/ayah/random")
+// تحميل السورة
+function loadSurah(num,name){
+
+document.getElementById("title").innerText="📖 سورة "+name;
+document.getElementById("ayahs").innerHTML="جاري التحميل...";
+
+fetch(`https://api.alquran.cloud/v1/surah/${num}`)
 .then(r=>r.json())
-.then(d=>{
-document.getElementById("quran").innerText =
-d.data.text;
+.then(data=>{
+
+let ayahs=data.data.ayahs;
+
+currentAudioUrl = `https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/${num}.mp3`;
+
+document.getElementById("ayahs").innerHTML="";
+
+// عرض الآيات + تفسير
+ayahs.forEach(a=>{
+
+let box=document.createElement("div");
+box.className="ayah";
+
+box.innerHTML=`
+<p><b>${a.text}</b></p>
+<p style="opacity:0.7;font-size:14px" id="t${a.numberInSurah}">
+جاري تحميل التفسير...
+</p>
+`;
+
+document.getElementById("ayahs").appendChild(box);
+
+// 📚 تفسير مبسط
+fetch(`https://api.alquran.cloud/v1/ayah/${a.number}/editions/ar.muyassar`)
+.then(res=>res.json())
+.then(t=>{
+document.getElementById("t"+a.numberInSurah).innerText =
+"📚 التفسير: " + t.data[0].text;
 });
 
-// 📊 المهام + حفظ
-function update(){
-let boxes=document.querySelectorAll("input[type='checkbox']");
-let done=0;
+});
 
-boxes.forEach(b=>{if(b.checked)done++;});
-
-let percent=Math.round((done/boxes.length)*100);
-
-document.getElementById("bar").style.width=percent+"%";
-document.getElementById("percent").innerText=percent+"% مكتمل";
-
-let level="مبتدئ 🌱";
-if(percent>50) level="ملتزم 🌿";
-if(percent==100) level="ممتاز 🔥";
-
-document.getElementById("level").innerText="المستوى: "+level;
-
-localStorage.setItem("tasks",
-JSON.stringify([...boxes].map(b=>b.checked))
-);
+});
 }
 
-// تحميل
-window.onload=function(){
-let saved=JSON.parse(localStorage.getItem("tasks")||"[]");
-let boxes=document.querySelectorAll("input");
-
-boxes.forEach((b,i)=>b.checked=saved[i]||false);
-update();
+// 🔊 تشغيل الصوت
+function playAudio(){
+if(currentAudioUrl){
+let audio=new Audio(currentAudioUrl);
+audio.play();
+}
 }
 
-// إعادة تعيين
-function reset(){
-localStorage.removeItem("tasks");
-location.reload();
-}
 </script>
 
 </body>
