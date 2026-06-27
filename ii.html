@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نور الإيمان</title>
+
+<style>
+body{
+margin:0;
+font-family:system-ui;
+background:#0B1D39;
+color:white;
+}
+
+header{
+padding:15px;
+text-align:center;
+background:rgba(255,255,255,0.05);
+backdrop-filter: blur(10px);
+position:sticky;
+top:0;
+font-weight:bold;
+}
+
+.hero{
+text-align:center;
+padding:20px;
+}
+
+.hero h1{
+color:#D4AF37;
+animation:float 3s infinite;
+}
+
+@keyframes float{
+0%,100%{transform:translateY(0);}
+50%{transform:translateY(-10px);}
+}
+
+.container{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:15px;
+padding:15px;
+}
+
+.card{
+background:#102a4a;
+padding:15px;
+border-radius:15px;
+transition:0.3s;
+}
+
+.card:hover{transform:scale(1.03);}
+
+h3{color:#D4AF37;}
+
+.task{
+display:flex;
+justify-content:space-between;
+padding:8px;
+margin:5px 0;
+background:rgba(255,255,255,0.05);
+border-radius:10px;
+}
+
+button{
+padding:8px;
+background:#D4AF37;
+border:none;
+border-radius:10px;
+font-weight:bold;
+cursor:pointer;
+margin-top:8px;
+}
+
+.bar{
+height:10px;
+background:#1f3a5a;
+border-radius:10px;
+overflow:hidden;
+}
+
+#bar{
+height:100%;
+width:0%;
+background:linear-gradient(90deg,#D4AF37,#fff2a6);
+transition:0.5s;
+}
+
+small{opacity:0.7;}
+</style>
+</head>
+
+<body>
+
+<header>🌙 نور الإيمان</header>
+
+<div class="hero">
+<h1>ابدأ يومك بالإيمان</h1>
+<p id="verse"></p>
+</div>
+
+<div class="container">
+
+<div class="card">
+<h3>🕌 الصلاة القادمة</h3>
+<p id="prayer">تحميل...</p>
+</div>
+
+<div class="card">
+<h3>📖 آية / قرآن</h3>
+<p id="quran"></p>
+</div>
+
+<div class="card">
+<h3>🤲 الذكر</h3>
+<p id="dhikr"></p>
+<button onclick="newDhikr()">ذكر جديد</button>
+</div>
+
+<div class="card">
+<h3>📅 مهام اليوم</h3>
+
+<div class="task"><span>الفجر</span><input type="checkbox" onchange="update()"></div>
+<div class="task"><span>أذكار</span><input type="checkbox" onchange="update()"></div>
+<div class="task"><span>قرآن</span><input type="checkbox" onchange="update()"></div>
+<div class="task"><span>صدقة</span><input type="checkbox" onchange="update()"></div>
+
+<div class="bar"><div id="bar"></div></div>
+<p id="percent">0%</p>
+<p id="level">المستوى: مبتدئ 🌱</p>
+
+<button onclick="reset()">إعادة تعيين</button>
+</div>
+
+<div class="card">
+<h3>🧭 القبلة</h3>
+<p id="qibla">اتجاه القبلة سيُطور لاحقاً</p>
+</div>
+
+</div>
+
+<script>
+// 🌙 آيات
+const verses = [
+"فإن مع العسر يسرا",
+"ولا تيأسوا من روح الله",
+"إن الله مع الصابرين",
+"واذكر ربك إذا نسيت"
+];
+
+document.getElementById("verse").innerText =
+verses[Math.floor(Math.random()*verses.length)];
+
+// 🤲 أذكار
+const dhikr = ["سبحان الله","الحمد لله","لا إله إلا الله","الله أكبر"];
+document.getElementById("dhikr").innerText =
+dhikr[0];
+
+function newDhikr(){
+document.getElementById("dhikr").innerText =
+dhikr[Math.floor(Math.random()*dhikr.length)];
+}
+
+// 🕌 مواقيت الصلاة (طرابلس)
+fetch("https://api.aladhan.com/v1/timingsByCity?city=Tripoli&country=Libya&method=2")
+.then(r=>r.json())
+.then(d=>{
+document.getElementById("prayer").innerText =
+"الفجر: " + d.data.timings.Fajr;
+});
+
+// 📖 قرآن عشوائي
+fetch("https://api.alquran.cloud/v1/ayah/random")
+.then(r=>r.json())
+.then(d=>{
+document.getElementById("quran").innerText =
+d.data.text;
+});
+
+// 📊 المهام + حفظ
+function update(){
+let boxes=document.querySelectorAll("input[type='checkbox']");
+let done=0;
+
+boxes.forEach(b=>{if(b.checked)done++;});
+
+let percent=Math.round((done/boxes.length)*100);
+
+document.getElementById("bar").style.width=percent+"%";
+document.getElementById("percent").innerText=percent+"% مكتمل";
+
+let level="مبتدئ 🌱";
+if(percent>50) level="ملتزم 🌿";
+if(percent==100) level="ممتاز 🔥";
+
+document.getElementById("level").innerText="المستوى: "+level;
+
+localStorage.setItem("tasks",
+JSON.stringify([...boxes].map(b=>b.checked))
+);
+}
+
+// تحميل
+window.onload=function(){
+let saved=JSON.parse(localStorage.getItem("tasks")||"[]");
+let boxes=document.querySelectorAll("input");
+
+boxes.forEach((b,i)=>b.checked=saved[i]||false);
+update();
+}
+
+// إعادة تعيين
+function reset(){
+localStorage.removeItem("tasks");
+location.reload();
+}
+</script>
+
+</body>
+</html>
